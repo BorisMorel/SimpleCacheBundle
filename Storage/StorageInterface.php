@@ -4,10 +4,11 @@ namespace IMAG\SimpleCacheBundle\Storage;
 
 interface StorageInterface
 {
-    function getUniqueName($param);
-    function getCacheFile($param);
-    function setCacheFile($param);
+    function getCacheFile($filename);
+    function setCacheFile($filename, $param);
     function getLifetime();
-    function setLifetime(\Datetime $time);
+    function setLifetime($time);
     function setExtrasParameters(array $configs);
+    function getExtrasParameters();
+    function cacheClear();
 }

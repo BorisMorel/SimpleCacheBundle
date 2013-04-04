@@ -4,19 +4,16 @@ namespace IMAG\SimpleCacheBundle\Storage;
 
 class HddStorage extends AbstractStorage
 {
-    private $configs;
-
-    public function getCacheFile($param)
+    public function getCacheFile($filename)
     {
-        die('ici');
-        $cacheFile = $this->getFileName($param);
+        $cacheFile = $this->getCacheFilename($filename);
 
         if (!file_exists($cacheFile)) {
             return false;
         }
         
         $stat = stat($cacheFile);
-        if ($stat['ctime'] > $this->getLifetime()) {
+        if ($stat['ctime'] + $this->getLifetime() < time()) {
             unlink($cacheFile);
             
             return false;
@@ -25,41 +22,65 @@ class HddStorage extends AbstractStorage
         $handle = fopen($cacheFile, 'r');
         $content = fread($handle, filesize($cacheFile));
         fclose($handle);
+
         return unserialize($content);
     }
 
-    public function setCacheFile($param)
+    public function setCacheFile($filename, $param)
     {
-        $cacheFile = $this->getFileName($param);
-        
-        $handle = fopen($cacheFile, 'w+');
+        $cacheFile = $this->getCacheFilename($filename);
+
+        if (!$handle = @fopen($cacheFile, 'x')) {
+            throw new \RuntimeException(sprintf('File "%s" can\'t be open for writing', $cacheFile));
+        }
+
         fwrite($handle, serialize($param));
         fclose($handle);
 
         return $this;
     }
 
-    public function setExtrasParameters(array $configs)
+    public function cacheClear()
     {
-        $this->configs = $configs;
+        $cacheDir = $this->getCacheDir();
+        $fileExtension = $this->getFileExtension();
 
-        return $this;
-    }
-
-    private function getFileName($param)
-    {
-        $uniqueName = $this->getUniqueName($param);
-
-        $cacheDir = isset($this->configs['cache_dir']) ? $this->configs['cache_dir'] : '/tmp';
-        $fileExtension = isset($this->configs['file_extension']) ? $this->configs['file_extension'] : 'cache';
-
-        $cacheFile = $cacheDir
+        $pattern = $cacheDir
             .DIRECTORY_SEPARATOR
-            .$uniqueName
+            .'*'
             .'.'
             .$fileExtension
             ;
 
-        return $cacheFile;
+        foreach(glob($pattern) as $filename) {
+            unlink($filename);
+        }
+
+        return true;
+    }
+
+    private function getCacheFilename($filename)
+    {
+        $cacheDir = $this->getCacheDir();
+        $fileExtension = $this->getFileExtension();
+
+        $file = $cacheDir
+            .DIRECTORY_SEPARATOR
+            .$filename
+            .'.'
+            .$fileExtension
+            ;
+
+        return $file;
+    }
+
+    private function getCacheDir()
+    {
+        return isset($this->configs['cache_dir']) ? $this->configs['cache_dir'] : '/tmp';
+    }
+
+    private function getFileExtension()
+    {
+        return isset($this->configs['file_extension']) ? $this->configs['file_extension'] : 'bomo.cache';
     }
 }

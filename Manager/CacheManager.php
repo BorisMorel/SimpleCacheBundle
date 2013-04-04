@@ -6,6 +6,7 @@ class CacheManager
 {
     private 
         $config,
+        $refKey,
         $storage
         ;
 
@@ -26,16 +27,52 @@ class CacheManager
         }
     }
 
-    public function getReference($param)
-    {
-        return $this->storage->getCacheFile($param);
+    public function getReference($param = null)
+    {        
+        $key = $this->getUniqueKey($param);
+
+        return $this->storage->getCacheFile($key);
     }
 
     public function addReference($param)
     {
-        $this->storage->setCacheFile($param);
+        $key = $this->getUniqueKey($param);
+
+        $this->storage->setCacheFile($key, $param);
+        $this->refKey = null;
 
         return $this;
+    }
+
+    public function setReferenceKey($key)
+    {
+        $this->refKey = $key;
+
+        return $this;
+    }
+
+    public function getReferenceKey()
+    {
+        return $this->refKey;
+    }
+
+    public function clear()
+    {
+        return $this->storage->cacheClear();
+    }
+
+    private function getUniqueKey($param = null)
+    {
+        if (null === $param && null === $this->refKey) {
+            throw \RuntimeException("You can't call *Reference method without a key");
+        }
+
+        return null === $this->refKey ? $this->getUniqueName($param) : $this->refKey;
+    }
+
+    private function getUniqueName($param)
+    {
+        return md5(serialize($param));
     }
 
     private function getStorageClass()
@@ -75,7 +112,7 @@ class CacheManager
     {
         $storageMethod = $this->config['storage_method'];
 
-        $time = new \Datetime('+'.$this->config['storage'][$storageMethod]['default_lifetime'].' seconds');
+        $time = $this->config['storage'][$storageMethod]['default_lifetime'];
         $this->storage->setLifetime($time);
 
         return $this;

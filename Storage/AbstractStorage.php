@@ -4,12 +4,9 @@ namespace IMAG\SimpleCacheBundle\Storage;
 
 abstract class AbstractStorage implements StorageInterface
 {
-    public function getUniqueName($param)
-    {
-        return md5(serialize($param));
-    }
+    protected $configs;
 
-    public function setLifetime(\Datetime $time)
+    public function setLifetime($time)
     {
         $this->lifetime = $time;
 
@@ -19,5 +16,17 @@ abstract class AbstractStorage implements StorageInterface
     public function getLifetime()
     {
         return $this->lifetime;
+    }
+
+    public function setExtrasParameters(array $configs)
+    {
+        $this->configs = $configs;
+
+        return $this;
+    }
+
+    public function getExtrasParameters()
+    {
+        return $this->configs;
     }
 }
