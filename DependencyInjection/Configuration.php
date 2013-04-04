@@ -4,6 +4,7 @@ namespace IMAG\SimpleCacheBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
 /**
  * This is the class that validates and merges configuration from your app/config files
@@ -19,11 +20,37 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('imag_simple_cache');
-
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
+        $rootNode
+            ->children()
+                ->scalarNode('storage_method')->isRequired()->end()
+                ->append($this->addStorage())
+            ->end()
+        ;
 
         return $treeBuilder;
+    }
+
+    public function addStorage()
+    {
+        $treeBuilder = new TreeBuilder();
+        $node = $treeBuilder->root('storage');
+
+        $node
+            ->isRequired()
+            ->requiresAtLeastOneElement()
+            ->useAttributeAsKey('id')
+                ->prototype('array')
+                    ->children()
+                        ->scalarNode('class')->isRequired()->end()
+                        ->scalarNode('default_lifetime')->defaultValue('3600')->end()
+                        ->arrayNode('extras')
+                            ->prototype('scalar')->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+
+        return $node;
     }
 }
