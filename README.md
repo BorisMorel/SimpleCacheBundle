@@ -73,7 +73,7 @@ imag_simple_cache:
 mixed      getReference(mixed $param)
 this       addReference(mixed $param)
 this       setReferenceKey(string $key)
-string     getReference()
+string     getReferenceKey()
 this       clear()
 ```
 
