@@ -95,7 +95,8 @@ public function getArchiveOfAppsPdf(array $applications)
     $key = md5(serialize($applications));
 
     $this->cache->setReferenceKey($key);
-
+    
+     // Because setReference have been called, this reference is searched with the key $key
     if ($cached = $this->cache->getReference()) {
         return $cached;
     }
@@ -112,11 +113,12 @@ public function getExample(array $applications)
 {
     $zip = $this->getZip($applications);
 
+    // This reference is searched under md5(serialize($zip))
     if ($cached = $this->cache->getReference($zip)) {
         return $cached;
     }
 
-    // Because setReference have been called, this method use $key to store the $zip reference
+    // This reference is stored under md5(serialize($zip))
     $this->cache->addReference($zip);
 
     return $zip;
