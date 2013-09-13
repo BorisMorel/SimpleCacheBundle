@@ -50,10 +50,14 @@ imag_simple_cache:
     storage:
         hdd:
             class: \IMAG\SimpleCacheBundle\Storage\HddStorage
-#            default_lifetime: 3600
-#            extras:
-#                cache_dir: /tmp
-#                file_extension: bomo.cache
+            default_lifetime: 3600
+            extras:
+                base_dir: /tmp
+                cache_folder: cache_q1hU5HHt
+                file_extension: imag.cache
+                deep: 3
+                folder_length: 3
+
 
 ```
 
