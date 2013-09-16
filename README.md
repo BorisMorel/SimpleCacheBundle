@@ -60,6 +60,15 @@ imag_simple_cache:
 
 
 ```
+### Console
+
+``` bash
+php app/console help simplecache:cache-clear
+Usage:
+ simplecache:cache-clear [--entire-cache]
+```
+
+By default, clear-cache without any parameter clear expired references only.
 
 ### Use the bundle
 
@@ -78,7 +87,8 @@ mixed      getReference(mixed $param)
 this       addReference(mixed $param)
 this       setReferenceKey(string $key)
 string     getReferenceKey()
-this       clear()
+array      clearCache()
+array      clearExpired()
 ```
 
 **Note:**
