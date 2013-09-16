@@ -56,9 +56,14 @@ class CacheManager
         return $this->refKey;
     }
 
-    public function clear()
+    public function clearCache()
     {
         return $this->storage->cacheClear();
+    }
+
+    public function clearExpired()
+    {
+        return $this->storage->clearExpiredRef();
     }
 
     private function getUniqueKey($param = null)

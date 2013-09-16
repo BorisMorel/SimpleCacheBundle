@@ -11,4 +11,5 @@ interface StorageInterface
     function setExtrasParameters(array $configs);
     function getExtrasParameters();
     function cacheClear();
+    function clearExpiredRef();
 }

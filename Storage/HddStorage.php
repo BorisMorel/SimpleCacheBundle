@@ -50,16 +50,56 @@ class HddStorage extends AbstractStorage
 
     public function cacheClear()
     {
-        $it = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($this->getPrependPath(), \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
+        $it = $this->getIterator($this->getPrependPath());
+        $removed = array();
 
         foreach ($it as $splFileInfo) {
             $fct = $splFileInfo->isDir() ? 'rmdir' : 'unlink';
+            $removed[] = $splFileInfo->getRealPath();
 
             call_user_func($fct, $splFileInfo->getRealPath());
         }
+
+        return $removed;
+    }
+
+    public function clearExpiredRef()
+    {
+        $it = $this->getIterator($this->getPrependPath());
+        $removed = array();
+
+        foreach ($it as $splFileInfo) {
+            if (false === $splFileInfo->isDir()) {
+                $stat = stat($splFileInfo->getRealPath());
+                
+                if ($stat['ctime'] + $this->getLifetime() < time()) {
+                    $removed[] = $splFileInfo->getRealPath();
+
+                    unlink($splFileInfo->getRealPath());
+                }
+            } else {
+                $dir = new \DirectoryIterator($splFileInfo->getRealPath());
+
+                if(2 == iterator_count($dir)) { // 2 because './' and '../'
+                    $removed[] = $splFileInfo->getRealPath();
+
+                    rmdir($splFileInfo->getRealPath());
+                }
+            }
+        }
+        
+        return $removed;
+    }
+
+    private function getIterator($path)
+    {
+        $it = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+        
+
+        return $it;
     }
 
     private function getCacheFilePath($ref)
